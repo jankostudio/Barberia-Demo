@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Asfalto Barber Club</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Big+Shoulders+Display:wght@700;800;900&family=Permanent+Marker&display=swap">
+<style>
+/* Concepto: barbería de barrio a medianoche. Asfalto negro, la barra de barbero como único color, cintas amarillas de "obra" para las instrucciones. */
+:root{
+  --bg:#0b0b0d; --bg2:#121216; --line:#27272e; --fg:#f1eee8; --muted:#92929d;
+  --red:#dc2038; --blue:#2a62ff; --blue-t:#7a9dff; --white:#f4f1ea; --tape:#ffd400; --ink:#0b0b0d;
+  --f-display:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif;
+  --f-body:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-tag:'Permanent Marker','Comic Sans MS',cursive;
+  --pole-w:clamp(54px,14vw,96px); --pole-h:clamp(230px,56vw,380px);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.65 var(--f-body);overflow-x:clip}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+body::after{content:"";position:fixed;inset:0;z-index:70;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>")}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,p{margin:0}
+:focus-visible{outline:3px solid var(--tape);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sec{padding-block:clamp(64px,10vw,116px);overflow-x:clip}
+svg.i{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* barra de progreso */
+.prog{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;z-index:80;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--red) 0 33%,var(--white) 33% 66%,var(--blue) 66%)}
+
+/* barra de barbero */
+.stripes{position:absolute;left:0;right:0;top:-114px;height:calc(100% + 114px);background:repeating-linear-gradient(-45deg,var(--red) 0 20px,var(--white) 20px 40px,var(--blue) 40px 60px,var(--white) 60px 80px);animation:spin-v 2.4s linear infinite}
+.stripes.h{top:0;bottom:0;left:-114px;right:0;height:auto;width:calc(100% + 114px);background:repeating-linear-gradient(45deg,var(--red) 0 20px,var(--white) 20px 40px,var(--blue) 40px 60px,var(--white) 60px 80px);animation:spin-h 2.4s linear infinite}
+@keyframes spin-v{to{transform:translateY(113.137px)}}
+@keyframes spin-h{to{transform:translateX(113.137px)}}
+.pole{position:relative;width:var(--pole-w);height:var(--pole-h);padding:14px 0;flex:none}
+.pole .tube{position:relative;height:100%;overflow:hidden;border-radius:10px;background:var(--white)}
+.pole .tube::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.6),rgba(255,255,255,.38) 24%,rgba(255,255,255,0) 44%,rgba(0,0,0,.28) 82%,rgba(0,0,0,.65))}
+.pole .cap{position:absolute;left:-6%;width:112%;height:18px;border-radius:7px;background:linear-gradient(90deg,#4b4b52,#e8e8ee 30%,#8b8b94 60%,#3a3a40);z-index:2}
+.pole .cap.t{top:0}.pole .cap.b{bottom:0}
+.pole{filter:drop-shadow(0 0 28px rgba(220,32,56,.28)) drop-shadow(0 0 40px rgba(42,98,255,.22))}
+.mini{position:relative;width:14px;height:34px;overflow:hidden;border-radius:4px;flex:none}
+.mini .stripes{animation-duration:1.6s}
+.ribbon{position:relative;height:14px;overflow:hidden}
+
+/* cintas de instrucciones */
+.guia{display:inline-block;font-family:var(--f-tag);font-size:.92rem;line-height:1.25;color:var(--ink);background:var(--tape);padding:6px 12px;transform:rotate(-1.4deg);box-shadow:3px 3px 0 rgba(0,0,0,.55);max-width:100%}
+.guia::before{content:"AQUÍ VA: ";opacity:.65}
+.guia.libre::before{content:"NOTA: "}
+.guia-box{border:2px dashed var(--tape);padding:16px 18px;color:var(--tape);font-size:.95rem;max-width:62ch}
+.guia-box b{font-family:var(--f-tag);font-weight:400;display:block;font-size:1.1rem;margin-bottom:4px}
+.guia-box code{background:rgba(255,212,0,.14);padding:1px 6px;font-size:.88em}
+body.sin-guias .guia,body.sin-guias .guia-box{display:none}
+.gtoggle{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:90;font:700 .8rem/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--tape);border:0;padding:12px 14px;cursor:pointer;box-shadow:3px 3px 0 #000}
+
+/* navegación */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(11,11,13,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .in{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:62px}
+.logo{display:flex;align-items:center;gap:10px;font:900 1.55rem/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase}
+.logo small{display:block;text-transform:uppercase;font:500 .62rem/1 var(--f-body);letter-spacing:.32em;color:var(--muted);margin-top:3px}
+.links{display:flex;gap:26px;font:700 .8rem/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase}
+.links a{padding:6px 0;border-bottom:2px solid transparent;color:var(--muted);transition:color .2s,border-color .2s}
+.links a:hover{color:var(--fg);border-color:var(--red)}
+.nav .cta{display:none}
+.burger{background:none;border:2px solid var(--line);color:var(--fg);padding:9px 12px;font:700 .75rem/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+@media (max-width:820px){
+  .links{display:none;position:absolute;left:0;right:0;top:100%;flex-direction:column;gap:0;background:var(--bg);border-bottom:1px solid var(--line);padding:6px max(16px,env(safe-area-inset-left,0px)) 14px}
+  .links.open{display:flex}
+  .links a{padding:15px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+}
+@media (min-width:821px){.burger{display:none}.nav .cta{display:inline-flex}}
+
+/* botones */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 22px;font:800 1.05rem/1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;border:2px solid transparent;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn.p{background:var(--red);color:#fff;box-shadow:4px 4px 0 var(--blue)}
+.btn.s{background:transparent;color:var(--fg);border-color:var(--fg);box-shadow:4px 4px 0 var(--red)}
+.btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--blue)}
+.btn.s:hover{box-shadow:2px 2px 0 var(--red)}
+.btn.sm{padding:10px 16px;font-size:.95rem}
+
+/* hero */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 70% at 88% 30%,rgba(42,98,255,.2),transparent 70%),radial-gradient(55% 60% at 8% 95%,rgba(220,32,56,.18),transparent 70%)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(12px,4vw,56px);align-items:center;padding-block:clamp(40px,8vw,96px)}
+.hero h1{font:900 clamp(3.7rem,17vw,10.5rem)/.84 var(--f-display);text-transform:uppercase;letter-spacing:.01em}
+.hero h1 .line{display:block;overflow:hidden;padding-bottom:.04em}
+.hero h1 .line>span{display:inline-block;animation:up .9s cubic-bezier(.2,.8,.2,1) backwards}
+.hero h1 .l2>span{animation-delay:.12s;color:transparent;-webkit-text-stroke:2px var(--fg)}
+.hero h1 .l3>span{animation-delay:.24s;color:var(--red)}
+@keyframes up{from{transform:translateY(105%)}}
+.est{display:inline-block;font:400 1.15rem/1 var(--f-tag);color:var(--blue-t);transform:rotate(-4deg);margin-bottom:14px}
+.hero p.sub{margin-top:26px;max-width:40ch;font-size:clamp(1rem,2.6vw,1.2rem);color:#cfcdc6}
+.hero .acts{display:flex;flex-wrap:wrap;gap:16px;margin-top:30px}
+.hero .facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:34px;color:var(--muted);font-size:.92rem}
+.hero .facts span{display:inline-flex;align-items:center;gap:8px}
+.hero .guia{margin-top:22px}
+.hero .pole{will-change:transform}
+
+/* cinta de texto */
+.marq{overflow:hidden;padding-block:26px;background:var(--bg)}
+.marq .band{width:112%;margin-left:-6%;transform:rotate(-1.3deg);background:var(--fg);color:var(--ink);overflow:hidden;white-space:nowrap;border-block:3px solid var(--ink)}
+.marq .track{display:inline-flex;animation:marq 26s linear infinite}
+.marq span{font:900 1.7rem/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;padding:13px 22px}
+.marq span:nth-child(even){color:var(--red)}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* títulos de sección */
+.eyebrow{display:flex;align-items:center;gap:12px;font:700 .78rem/1 var(--f-body);letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+.eyebrow i{display:block;position:relative;width:34px;height:8px;overflow:hidden}
+.title{margin-top:14px;font:900 clamp(2.6rem,8vw,5.2rem)/.92 var(--f-display);text-transform:uppercase;text-wrap:balance}
+.title em{font-style:normal;color:var(--red)}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:clamp(30px,5vw,56px)}
+.head>div{min-width:0}
+
+/* servicios */
+.price{display:grid;grid-template-columns:1fr 1fr;gap:0 clamp(24px,6vw,80px)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 18px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--line);transition:padding-left .25s,border-color .25s}
+.row:hover{padding-left:12px;border-color:var(--red)}
+.row h3{font:800 1.55rem/1.1 var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.row .p{font:900 1.8rem/1 var(--f-display);color:var(--white)}
+.row p{grid-column:1/-1;color:var(--muted);font-size:.93rem}
+.price+.guia{margin-top:30px}
+@media (max-width:760px){.price{grid-template-columns:1fr}}
+
+/* trabajos */
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:clamp(150px,20vw,230px);gap:10px}
+.tile{position:relative;margin:0;min-width:0;overflow:hidden;border:1px solid var(--line)}
+.tile.w2{grid-column:span 2}.tile.h2{grid-row:span 2}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:12px;color:var(--muted);background:repeating-linear-gradient(135deg,#141418 0 14px,#18181d 14px 28px);transition:transform .5s cubic-bezier(.2,.8,.2,1),color .3s}
+.ph::after{content:"";position:absolute;inset:auto 0 0;height:4px;background:var(--c,var(--red));transform:scaleX(0);transform-origin:0 50%;transition:transform .4s}
+.ph svg{width:34px;height:34px}
+.ph b{font:800 1.15rem/1 var(--f-display);letter-spacing:.14em;color:var(--fg)}
+.ph span{font-size:.8rem}
+.tile:hover .ph{transform:scale(1.05);color:var(--fg)}
+.tile:hover .ph::after{transform:scaleX(1)}
+.tile .guia{position:absolute;left:10px;top:10px;z-index:2;font-size:.8rem}
+.grid+.guia-box{margin-top:26px}
+@media (max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile.w2{grid-column:span 2}}
+
+/* nosotros */
+.about{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(28px,6vw,80px);align-items:center}
+.photo{position:relative;aspect-ratio:4/5;max-width:100%;border:1px solid var(--line);background:repeating-linear-gradient(135deg,#141418 0 14px,#18181d 14px 28px)}
+.photo .ph{background:none}
+.photo .bar{position:absolute;left:-8px;top:24px;bottom:24px;width:14px;overflow:hidden}
+.about .txt{display:grid;gap:18px;margin-top:22px;color:#cfcdc6;max-width:52ch}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:34px}
+.stat{border-top:3px solid var(--red);padding-top:12px}
+.stat:nth-child(2){border-color:var(--white)}.stat:nth-child(3){border-color:var(--blue)}
+.stat b{display:block;font:900 clamp(2.2rem,7vw,3.6rem)/1 var(--f-display);font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted);letter-spacing:.06em}
+.about .guia{margin-top:22px}
+@media (max-width:760px){.about{grid-template-columns:1fr}.photo{aspect-ratio:4/3}}
+
+/* equipo */
+.team{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{position:relative;background:var(--bg2);border:1px solid var(--line);overflow:hidden;transition:transform .3s,border-color .3s}
+.card:hover{transform:translateY(-6px);border-color:var(--blue)}
+.card .pic{aspect-ratio:1/1;position:relative;background:repeating-linear-gradient(135deg,#141418 0 14px,#18181d 14px 28px)}
+.card .meta{padding:16px 18px 20px}
+.card h3{font:800 1.5rem/1 var(--f-display);letter-spacing:.05em;text-transform:uppercase}
+.card p{color:var(--muted);font-size:.9rem;margin-top:6px}
+.team+.guia{margin-top:28px}
+@media (max-width:760px){.team{grid-template-columns:1fr}.card{display:grid;grid-template-columns:120px minmax(0,1fr)}.card .pic{aspect-ratio:auto;height:100%}}
+
+/* reseñas */
+.quotes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.q{border-left:3px solid var(--red);padding:6px 0 6px 18px}
+.q:nth-child(2){border-color:var(--white)}.q:nth-child(3){border-color:var(--blue)}
+.q .st{color:var(--tape);letter-spacing:.2em;font-size:.9rem}
+.q p{margin-top:8px;font-size:1.05rem}
+.q small{display:block;margin-top:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-size:.75rem}
+.quotes+.guia{margin-top:28px}
+@media (max-width:760px){.quotes{grid-template-columns:1fr}}
+
+/* visítanos */
+.visit{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(28px,6vw,70px);align-items:start}
+.hours{width:100%;border-collapse:collapse;margin-top:26px}
+.hours td{padding:14px 0;border-bottom:1px solid var(--line);font-size:1rem}
+.hours td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:#cfcdc6}
+.hours tr.today td{color:var(--fg);font-weight:700;border-color:var(--red)}
+.hours tr.today td:first-child::after{content:"HOY";margin-left:10px;font:900 .75rem/1 var(--f-display);letter-spacing:.14em;background:var(--red);color:#fff;padding:3px 7px}
+.hours tr.closed td:last-child{color:var(--muted)}
+.visit .guia{margin-top:22px}
+.map{position:relative;display:block;aspect-ratio:4/3.1;max-width:100%;overflow:hidden;border:1px solid var(--line);background:#0f0f13;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:52px 52px}
+.map::before{content:"";position:absolute;inset:-20%;background:linear-gradient(115deg,transparent 46%,#1f1f26 46% 51%,transparent 51%),linear-gradient(28deg,transparent 60%,#1b1b21 60% 64%,transparent 64%)}
+.pin{position:absolute;left:50%;top:44%;width:44px;height:44px;margin:-44px 0 0 -22px;color:var(--red);z-index:2;filter:drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+.pin svg{width:100%;height:100%;fill:var(--red);stroke:#fff;stroke-width:1.4}
+.pin svg circle{fill:#fff;stroke:none}
+.pulse{position:absolute;left:50%;top:44%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:2px solid var(--red);animation:pulse 2s ease-out infinite}
+@keyframes pulse{from{transform:scale(.6);opacity:.9}to{transform:scale(5);opacity:0}}
+.map .cap{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;background:linear-gradient(0deg,rgba(11,11,13,.96),rgba(11,11,13,.7))}
+.map .cap strong{display:block;font:800 1.2rem/1.1 var(--f-display);letter-spacing:.05em;text-transform:uppercase}
+.map .cap small{color:var(--muted)}
+.map:hover .cap .btn{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--blue)}
+.map+.guia{margin-top:22px}
+@media (max-width:760px){.visit{grid-template-columns:1fr}}
+
+/* redes */
+.social{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.soc{display:flex;flex-direction:column;gap:30px;padding:20px;background:var(--bg2);border:1px solid var(--line);transition:transform .25s,background .25s,border-color .25s;min-width:0}
+.soc svg{width:34px;height:34px}
+.soc b{display:block;font:800 1.35rem/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase}
+.soc span{display:block;margin-top:4px;color:var(--muted);font-size:.85rem;overflow-wrap:anywhere}
+.soc:hover{transform:translateY(-6px);border-color:var(--c)}
+.soc:hover svg{color:var(--c)}
+.social+.guia{margin-top:26px}
+@media (max-width:820px){.social{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* cierre */
+.final{position:relative;overflow:hidden;text-align:center;border-top:1px solid var(--line);background:radial-gradient(60% 100% at 50% 0,rgba(220,32,56,.16),transparent 70%)}
+.final h2{font:900 clamp(3rem,13vw,9rem)/.88 var(--f-display);text-transform:uppercase;text-wrap:balance}
+.final h2 span{color:transparent;-webkit-text-stroke:2px var(--fg)}
+.final .acts{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:34px}
+footer{padding-block:28px 96px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+
+/* animación al deslizar */
+.reveal{transition:opacity .8s ease var(--d,0s),transform .8s cubic-bezier(.2,.8,.2,1) var(--d,0s)}
+.pre{opacity:0;transform:translateY(34px)}
+.pre[data-r="left"]{transform:translateX(-44px)}
+.pre[data-r="right"]{transform:translateX(44px)}
+.pre[data-r="zoom"]{transform:scale(.92)}
+.pre.in{opacity:1;transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .stripes,.stripes.h,.marq .track,.pulse,.hero h1 .line>span{animation:none}
+  .reveal{transition:none}
+  .pre{opacity:1;transform:none}
+}
+[hidden]{display:none!important}
+img{max-width:100%}
+</style>
+</head>
+<body>
+<!-- ============================================================
+     DATOS DEL NEGOCIO
+     Para otra barbería, solo hay que cambiar esta lista.
+     El resto de la página se rellena sola.
+     ============================================================ -->
+<script>
+var NEGOCIO = {
+  // Nombre en el logo de arriba (dos líneas)
+  marca1: "Asfalto",
+  marca2: "Barber Club",
+  // Título grande de la portada (hasta 3 palabras; deja "" si sobra alguna)
+  palabra1: "Asfalto",
+  palabra2: "Barber",
+  palabra3: "Club",
+  nombreCompleto: "Asfalto Barber Club",
+  desde: "est. 2019",
+  frase: "Fades limpios, barba afilada y navaja de la vieja escuela. Corte de barrio, nivel de calle.",
+
+  // Contacto
+  whatsapp: "34600000000",          // con prefijo de país, sin + ni espacios
+  telefonoVisible: "600 00 00 00",
+  mensajeReserva: "Hola, quiero reservar una cita",
+
+  // Dónde está
+  calle: "Calle Ejemplo 12",
+  ciudad: "04001 Almería",
+  direccionParaMaps: "Calle Ejemplo 12 Almería",
+  enlaceMaps: "",                   // opcional: pega aquí el enlace de Google Maps del negocio
+
+  // Redes (solo el usuario, sin @ ni enlace). Deja "" para ocultar una.
+  instagram: "tu_barberia",
+  tiktok: "tu_barberia",
+  facebook: "tu.barberia",
+
+  // Horario de lunes a domingo
+  horario: [
+    "10:00 a 14:00 · 16:00 a 20:30",
+    "10:00 a 14:00 · 16:00 a 20:30",
+    "10:00 a 14:00 · 16:00 a 20:30",
+    "10:00 a 14:00 · 16:00 a 20:30",
+    "10:00 a 14:00 · 16:00 a 20:30",
+    "10:00 a 15:00",
+    "Cerrado"
+  ],
+  horarioCorto: "Lun a Sáb · 10:00 a 20:30"
+};
+</script>
+
+<div class="prog" id="prog"></div>
+
+<header class="nav">
+  <div class="wrap in">
+    <a class="logo" href="#top" aria-label="Asfalto Barber Club, inicio">
+      <span class="mini"><span class="stripes"></span></span>
+      <span><span data-t="marca1">Asfalto</span><small data-t="marca2">BARBER CLUB</small></span>
+    </a>
+    <nav class="links" id="links" aria-label="Secciones">
+      <a href="#servicios">Servicios</a>
+      <a href="#trabajos">Trabajos</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#equipo">Equipo</a>
+      <a href="#visitanos">Ubicación</a>
+      <a href="#redes">Redes</a>
+    </nav>
+    <a class="btn p sm cta" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20reservar%20una%20cita" data-h="wa" target="_blank" rel="noopener">Reservar</a>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="links">Menú</button>
+  </div>
+</header>
+
+<main id="top">
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="est" data-t="est">est. 2019</span>
+      <h1><span class="line l1"><span data-t="p1">Asfalto</span></span><span class="line l2"><span data-t="p2">Barber</span></span><span class="line l3"><span data-t="p3">Club</span></span></h1>
+      <p class="sub" data-t="frase">Fades limpios, barba afilada y navaja de la vieja escuela. Corte de barrio, nivel de calle.</p>
+      <div class="acts">
+        <a class="btn p" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20reservar%20una%20cita" data-h="wa" target="_blank" rel="noopener">Reservar cita</a>
+        <a class="btn s" href="https://www.google.com/maps/dir/?api=1&destination=Calle+Ejemplo+12+Almer%C3%ADa" data-h="dir" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Cómo llegar</a>
+      </div>
+      <div class="facts">
+        <span><svg class="i" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span data-t="dirCorta">Calle Ejemplo 12, Almería</span></span>
+        <span><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-t="horarioCorto">Lun a Sáb · 10:00 a 20:30</span></span>
+      </div>
+      <span class="guia">el nombre y logo del cliente. Se cambia en el bloque DATOS DEL NEGOCIO, al principio del archivo.</span>
+    </div>
+    <div class="pole" id="pole" aria-hidden="true">
+      <span class="cap t"></span>
+      <div class="tube"><span class="stripes"></span></div>
+      <span class="cap b"></span>
+    </div>
+  </div>
+</section>
+
+<div class="ribbon" aria-hidden="true"><span class="stripes h"></span></div>
+
+<div class="marq" aria-hidden="true">
+  <div class="band"><div class="track">
+    <span>Fade</span><span>//</span><span>Barba</span><span>//</span><span>Navaja</span><span>//</span><span>Corte clásico</span><span>//</span><span>Diseños</span><span>//</span>
+    <span>Fade</span><span>//</span><span>Barba</span><span>//</span><span>Navaja</span><span>//</span><span>Corte clásico</span><span>//</span><span>Diseños</span><span>//</span>
+  </div></div>
+</div>
+
+<!-- SERVICIOS -->
+<section class="sec" id="servicios">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <div class="eyebrow"><i><span class="stripes h"></span></i>Servicios</div>
+        <h2 class="title">Lo que <em>hacemos</em></h2>
+      </div>
+      <span class="guia">tus servicios y precios reales</span>
+    </div>
+    <div class="price">
+      <div class="row reveal" style="--d:.0s"><h3>Corte clásico</h3><span class="p">14€</span><p>Tijera y máquina, acabado con navaja en el contorno.</p></div>
+      <div class="row reveal" style="--d:.06s"><h3>Fade / degradado</h3><span class="p">15€</span><p>Degradado a medida: low, mid, high o skin.</p></div>
+      <div class="row reveal" style="--d:.12s"><h3>Corte + barba</h3><span class="p">22€</span><p>El combo completo con toalla caliente.</p></div>
+      <div class="row reveal" style="--d:.18s"><h3>Arreglo de barba</h3><span class="p">8€</span><p>Perfilado, volumen y aceite.</p></div>
+      <div class="row reveal" style="--d:.24s"><h3>Afeitado con navaja</h3><span class="p">12€</span><p>Vapor, espuma y navaja. Como antes.</p></div>
+      <div class="row reveal" style="--d:.30s"><h3>Corte niño</h3><span class="p">10€</span><p>Hasta 12 años.</p></div>
+    </div>
+    <span class="guia libre">Cada fila es un servicio. Copia una fila para añadir más o borra las que sobren.</span>
+  </div>
+</section>
+
+<div class="ribbon" aria-hidden="true"><span class="stripes h"></span></div>
+
+<!-- TRABAJOS -->
+<section class="sec" id="trabajos" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <div class="eyebrow"><i><span class="stripes h"></span></i>Trabajos</div>
+        <h2 class="title">Cortes que <em>hablan</em></h2>
+      </div>
+      <a class="btn s sm" href="https://www.instagram.com/tu_barberia/" data-h="ig" target="_blank" rel="noopener">Ver más en Instagram</a>
+    </div>
+    <div class="grid">
+      <figure class="tile w2 h2 reveal" data-r="zoom"><div class="ph" style="--c:var(--red)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg><b>FOTO 1</b><span>Fade degradado (foto grande)</span></div><span class="guia">AQUÍ IRÍAN FOTOS DE SU TRABAJO</span></figure>
+      <figure class="tile reveal" data-r="zoom" style="--d:.08s"><div class="ph" style="--c:var(--blue)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg><b>FOTO 2</b><span>Barba</span></div></figure>
+      <figure class="tile reveal" data-r="zoom" style="--d:.16s"><div class="ph" style="--c:var(--white)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg><b>FOTO 3</b><span>Diseño</span></div></figure>
+      <figure class="tile w2 reveal" data-r="zoom" style="--d:.1s"><div class="ph" style="--c:var(--red)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg><b>FOTO 4</b><span>El local por dentro</span></div></figure>
+      <figure class="tile reveal" data-r="zoom"><div class="ph" style="--c:var(--blue)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg><b>FOTO 5</b><span>Navaja</span></div></figure>
+      <figure class="tile reveal" data-r="zoom" style="--d:.08s"><div class="ph" style="--c:var(--white)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg><b>FOTO 6</b><span>Antes y después</span></div></figure>
+    </div>
+    <div class="guia-box"><b>Cómo se cambian las fotos</b>Cada recuadro se sustituye por una foto real del cliente (mínimo 800 px, mejor cuadradas o verticales). En el archivo busca <code>class="ph"</code> y cambia ese bloque por <code>&lt;img src="foto.jpg" alt="Fade degradado"&gt;</code>.</div>
+  </div>
+</section>
+
+<div class="ribbon" aria-hidden="true"><span class="stripes h"></span></div>
+
+<!-- NOSOTROS -->
+<section class="sec" id="nosotros">
+  <div class="wrap about">
+    <div class="photo reveal" data-r="left">
+      <span class="bar" aria-hidden="true"><span class="stripes"></span></span>
+      <div class="ph"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg><b>FOTO DEL LOCAL</b><span>o del barbero principal</span></div>
+    </div>
+    <div class="reveal" data-r="right">
+      <div class="eyebrow"><i><span class="stripes h"></span></i>Sobre nosotros</div>
+      <h2 class="title">Barbería de <em>barrio</em></h2>
+      <div class="txt">
+        <p>Abrimos en 2019 con una silla, una radio y ganas de hacerlo bien. Hoy seguimos igual: pocas florituras, mucho detalle y un ambiente donde se entra a cortarse el pelo y se sale con ganas de volver.</p>
+        <p>Trabajamos con cita y también por orden de llegada. Si pasas por la zona, asómate.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><b class="count" data-to="7">7</b><span>años en la calle</span></div>
+        <div class="stat"><b class="count" data-to="12000">12000</b><span>cortes hechos</span></div>
+        <div class="stat"><b class="count" data-to="4">4</b><span>sillas</span></div>
+      </div>
+      <span class="guia">la historia del negocio y sus cifras reales (años, clientes, sillas)</span>
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPO -->
+<section class="sec" id="equipo" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <div class="eyebrow"><i><span class="stripes h"></span></i>Equipo</div>
+        <h2 class="title">Quién te <em>corta</em></h2>
+      </div>
+    </div>
+    <div class="team">
+      <article class="card reveal" style="--d:0s"><div class="pic"><div class="ph"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg><b>FOTO</b></div></div><div class="meta"><h3>Nombre barbero</h3><p>Especialista en fades y diseños</p></div></article>
+      <article class="card reveal" style="--d:.1s"><div class="pic"><div class="ph"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg><b>FOTO</b></div></div><div class="meta"><h3>Nombre barbero</h3><p>Barba y navaja</p></div></article>
+      <article class="card reveal" style="--d:.2s"><div class="pic"><div class="ph"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg><b>FOTO</b></div></div><div class="meta"><h3>Nombre barbero</h3><p>Corte clásico y niños</p></div></article>
+    </div>
+    <span class="guia">foto, nombre y especialidad de cada barbero</span>
+  </div>
+</section>
+
+<!-- RESEÑAS -->
+<section class="sec">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <div class="eyebrow"><i><span class="stripes h"></span></i>Opiniones</div>
+        <h2 class="title">Lo dicen <em>ellos</em></h2>
+      </div>
+    </div>
+    <div class="quotes">
+      <div class="q reveal" style="--d:0s"><div class="st">★★★★★</div><p>El mejor fade que me han hecho en años. Trato de 10 y sin esperas.</p><small>Nombre del cliente</small></div>
+      <div class="q reveal" style="--d:.1s"><div class="st">★★★★★</div><p>Ambiente brutal y la barba me quedó perfecta. Repito seguro.</p><small>Nombre del cliente</small></div>
+      <div class="q reveal" style="--d:.2s"><div class="st">★★★★★</div><p>Llevo a mi hijo y sale encantado. Muy cuidadosos con los detalles.</p><small>Nombre del cliente</small></div>
+    </div>
+    <span class="guia">reseñas reales de Google del cliente (copia y pega las mejores)</span>
+  </div>
+</section>
+
+<div class="ribbon" aria-hidden="true"><span class="stripes h"></span></div>
+
+<!-- UBICACIÓN Y HORARIO -->
+<section class="sec" id="visitanos" style="background:var(--bg2)">
+  <div class="wrap visit">
+    <div class="reveal" data-r="left">
+      <div class="eyebrow"><i><span class="stripes h"></span></i>Visítanos</div>
+      <h2 class="title">Horario y <em>dónde</em></h2>
+      <table class="hours" id="hours">
+        <tr data-d="1"><td>Lunes</td><td>10:00 a 14:00 · 16:00 a 20:30</td></tr>
+        <tr data-d="2"><td>Martes</td><td>10:00 a 14:00 · 16:00 a 20:30</td></tr>
+        <tr data-d="3"><td>Miércoles</td><td>10:00 a 14:00 · 16:00 a 20:30</td></tr>
+        <tr data-d="4"><td>Jueves</td><td>10:00 a 14:00 · 16:00 a 20:30</td></tr>
+        <tr data-d="5"><td>Viernes</td><td>10:00 a 14:00 · 16:00 a 20:30</td></tr>
+        <tr data-d="6"><td>Sábado</td><td>10:00 a 15:00</td></tr>
+        <tr data-d="0" class="closed"><td>Domingo</td><td>Cerrado</td></tr>
+      </table>
+      <span class="guia">el horario real. El día de hoy se resalta solo.</span>
+    </div>
+    <div class="reveal" data-r="right">
+      <a class="map" href="https://www.google.com/maps/search/?api=1&query=Calle+Ejemplo+12+Almer%C3%ADa" data-h="map" target="_blank" rel="noopener" aria-label="Abrir la ubicación en Google Maps">
+        <span class="pulse"></span>
+        <span class="pin"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.6"/></svg></span>
+        <span class="cap"><span><strong data-t="calle">Calle Ejemplo 12</strong><small data-t="ciudad">04001 Almería</small></span><span class="btn p sm">Abrir en Google Maps</span></span>
+      </a>
+      <span class="guia">la ubicación del cliente. Al tocar el mapa se abre Google Maps.</span>
+      <div class="guia-box" style="margin-top:18px"><b>Cómo cambiar la ubicación</b>Abre el archivo y busca el bloque DATOS DEL NEGOCIO (está al principio). Cambia <code>calle</code>, <code>ciudad</code> y <code>direccionParaMaps</code>. Si quieres un enlace exacto, abre la barbería en Google Maps, pulsa Compartir, copia el enlace y pégalo en <code>enlaceMaps</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- REDES -->
+<section class="sec" id="redes">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <div class="eyebrow"><i><span class="stripes h"></span></i>Redes</div>
+        <h2 class="title">Síguenos en <em>la calle</em></h2>
+      </div>
+    </div>
+    <div class="social">
+      <a class="soc reveal" style="--c:#ff4f9a;--d:0s" href="https://www.instagram.com/tu_barberia/" data-h="ig" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg><div><b>Instagram</b><span data-t="igTxt">@tu_barberia</span></div></a>
+      <a class="soc reveal" style="--c:#25d3ee;--d:.08s" href="https://www.tiktok.com/@tu_barberia" data-h="tt" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.3 2.4 2 4 4.5 4.2"/></svg><div><b>TikTok</b><span data-t="ttTxt">@tu_barberia</span></div></a>
+      <a class="soc reveal" style="--c:#4c8bff;--d:.16s" href="https://www.facebook.com/tu.barberia" data-h="fb" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8.5c0-.3.2-.5.5-.5z"/></svg><div><b>Facebook</b><span data-t="fbTxt">/tu.barberia</span></div></a>
+      <a class="soc reveal" style="--c:#2fd96b;--d:.24s" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20reservar%20una%20cita" data-h="wa" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.3 18.8L4 20z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8c-1-.4-1.8-1.2-2.2-2.2l.8-.8-1-2z"/></svg><div><b>WhatsApp</b><span data-t="telTxt">600 00 00 00</span></div></a>
+    </div>
+    <span class="guia">las redes del cliente (Instagram, TikTok, Facebook) y su WhatsApp. Se cambian en DATOS DEL NEGOCIO, al principio del archivo.</span>
+  </div>
+</section>
+
+<div class="ribbon" aria-hidden="true"><span class="stripes h"></span></div>
+
+<!-- CIERRE -->
+<section class="sec final">
+  <div class="wrap">
+    <h2 class="reveal">Reserva tu <span>silla</span></h2>
+    <div class="acts reveal" style="--d:.1s">
+      <a class="btn p" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20reservar%20una%20cita" data-h="wa" target="_blank" rel="noopener">Reservar por WhatsApp</a>
+      <a class="btn s" href="https://www.google.com/maps/dir/?api=1&destination=Calle+Ejemplo+12+Almer%C3%ADa" data-h="dir" target="_blank" rel="noopener">Cómo llegar</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span data-t="copia">© 2026 Asfalto Barber Club</span>
+    <span data-t="pie">Calle Ejemplo 12, Almería · 600 00 00 00</span>
+  </div>
+</footer>
+
+<button class="gtoggle" id="gtoggle" type="button">Ocultar guías</button>
+
+<script>
+(function(){
+  var N = NEGOCIO, V = {
+    marca1:N.marca1, marca2:N.marca2, est:N.desde, p1:N.palabra1, p2:N.palabra2, p3:N.palabra3,
+    frase:N.frase, dirCorta:N.calle+', '+N.ciudad.replace(/^\d+\s*/,''), horarioCorto:N.horarioCorto,
+    igTxt:'@'+N.instagram, ttTxt:'@'+N.tiktok, fbTxt:'/'+N.facebook, telTxt:N.telefonoVisible,
+    calle:N.calle, ciudad:N.ciudad, copia:'\u00a9 '+new Date().getFullYear()+' '+N.nombreCompleto,
+    pie:N.calle+', '+N.ciudad.replace(/^\d+\s*/,'')+' \u00b7 '+N.telefonoVisible
+  };
+  var q = encodeURIComponent(N.direccionParaMaps);
+  var H = {
+    wa:'https://wa.me/'+N.whatsapp+'?text='+encodeURIComponent(N.mensajeReserva),
+    map:N.enlaceMaps || 'https://www.google.com/maps/search/?api=1&query='+q,
+    dir:N.enlaceMaps || 'https://www.google.com/maps/dir/?api=1&destination='+q,
+    ig:N.instagram ? 'https://www.instagram.com/'+N.instagram+'/' : '',
+    tt:N.tiktok ? 'https://www.tiktok.com/@'+N.tiktok : '',
+    fb:N.facebook ? 'https://www.facebook.com/'+N.facebook : ''
+  };
+  [].forEach.call(document.querySelectorAll('[data-t]'), function(el){
+    var k = el.getAttribute('data-t'); if(k in V) el.textContent = V[k];
+  });
+  [].forEach.call(document.querySelectorAll('[data-h]'), function(el){
+    var v = H[el.getAttribute('data-h')];
+    if(v){ el.setAttribute('href', v); } else { el.hidden = true; }
+  });
+  var logo = document.querySelector('.logo');
+  if(logo) logo.setAttribute('aria-label', N.nombreCompleto + ', inicio');
+  [].forEach.call(document.querySelectorAll('#hours tr'), function(tr){
+    var d = +tr.getAttribute('data-d'), txt = N.horario[(d + 6) % 7];
+    tr.lastElementChild.textContent = txt;
+    tr.classList.toggle('closed', /cerrado/i.test(txt));
+  });
+})();
+
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var prog = document.getElementById('prog');
+  var pole = document.getElementById('pole');
+
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var y = window.pageYOffset || 0;
+    prog.style.transform = 'scaleX(' + (h > 0 ? Math.min(1, y / h) : 0) + ')';
+    if(!reduce && pole && y < 900){ pole.style.transform = 'translateY(' + (y * 0.12).toFixed(1) + 'px)'; }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // menú móvil
+  var burger = document.getElementById('burger'), links = document.getElementById('links');
+  burger.addEventListener('click', function(){
+    var open = links.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.addEventListener('click', function(e){
+    if(e.target.tagName === 'A'){ links.classList.remove('open'); burger.setAttribute('aria-expanded','false'); }
+  });
+
+  // aparición al deslizar (solo se ocultan los bloques que están fuera de pantalla)
+  var els = [].slice.call(document.querySelectorAll('.reveal'));
+  if(!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -6% 0px'});
+    els.forEach(function(el){
+      if(el.getBoundingClientRect().top > window.innerHeight){ el.classList.add('pre'); io.observe(el); }
+    });
+
+    // contadores
+    var cio = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting) return;
+        cio.unobserve(e.target);
+        var el = e.target, to = +el.getAttribute('data-to'), t0 = null;
+        function step(t){
+          if(t0 === null) t0 = t;
+          var p = Math.min(1, (t - t0) / 1500), k = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(to * k).toLocaleString('es-ES');
+          if(p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }, {threshold:0.6});
+    [].slice.call(document.querySelectorAll('.count')).forEach(function(el){
+      if(el.getBoundingClientRect().top > window.innerHeight){ el.textContent = '0'; cio.observe(el); }
+    });
+  }
+
+  // día de hoy en el horario
+  var d = new Date().getDay();
+  var row = document.querySelector('#hours tr[data-d="' + d + '"]');
+  if(row) row.classList.add('today');
+
+  // mostrar u ocultar guías
+  var gt = document.getElementById('gtoggle');
+  gt.addEventListener('click', function(){
+    var off = document.body.classList.toggle('sin-guias');
+    gt.textContent = off ? 'Mostrar guías' : 'Ocultar guías';
+  });
+})();
+</script>
+</body>
+</html>
